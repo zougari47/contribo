@@ -10,6 +10,7 @@ export const Contributions = async ({ username }: { username: string }) => {
     contributions = await getLatestContributions({ username })
   } catch (error) {
     isError = true
+    console.error(error)
   }
 
   return (
