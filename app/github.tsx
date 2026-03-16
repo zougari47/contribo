@@ -108,6 +108,7 @@ export const getLatestContributions = async ({
     return { contributions: [], pageInfo: { hasNextPage: false, hasPreviousPage: false, startCursor: null, endCursor: null } }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const contributions: Contribution[] = searchData.nodes.map((node: any) => ({
     type: node.__typename === 'PullRequest' ? 'PR' : 'ISSUE',
     title: node.title,

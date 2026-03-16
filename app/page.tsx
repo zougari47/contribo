@@ -17,7 +17,7 @@ export default async function Home() {
           Contribo
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-md font-medium">
-          A beautifully simplified view of any developer's open-source contributions.
+          A beautifully simplified view of any developer&apos;s open-source contributions.
         </p>
         
         <SearchForm />

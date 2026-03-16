@@ -1,8 +1,7 @@
-import { type PullRequest } from '@/app/github'
+import { type Contribution } from '@/app/github'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -17,7 +16,7 @@ function formatStars(count: number): string {
   return String(count)
 }
 
-export const PR = ({ pr }: { pr: any }) => {
+export const PR = ({ pr }: { pr: Contribution }) => {
   const isIssue = pr.url.includes('/issues/')
   const stars: number | undefined = pr.repository?.stargazerCount
 

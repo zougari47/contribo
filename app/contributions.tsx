@@ -28,9 +28,9 @@ export const Contributions = async ({
     const result = await getLatestContributions({ username, includeUserRepos, type, cursor, direction })
     contributions = result.contributions
     pageInfo = result.pageInfo
-  } catch (error: any) {
+  } catch (error: unknown) {
     isError = true
-    errorMsg = error.message
+    errorMsg = error instanceof Error ? error.message : 'Unknown error'
     console.error(error)
   }
 
