@@ -60,7 +60,7 @@ export default async function UserPage({
   const page = Math.max(1, parseInt(pageStr || '1', 10) || 1)
 
   return (
-    <div className="min-h-screen flex flex-col items-center pt-12 pb-24 px-4 bg-background">
+    <div className="flex-1 flex flex-col items-center pt-12 pb-24 px-4 bg-background">
       
       <div className="w-full max-w-7xl mb-8 flex items-center justify-between">
         <Link href="/" className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group">

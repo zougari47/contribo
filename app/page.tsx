@@ -3,7 +3,7 @@ import SearchForm from '@/components/search-form'
 
 export default async function Home() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-4 selection:bg-primary selection:text-primary-foreground">
+    <div className="flex-1 flex flex-col items-center justify-center relative overflow-hidden px-4 selection:bg-primary selection:text-primary-foreground">
       {/* Decorative Globe */}
       <div 
         className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[600px] h-[600px] md:w-[800px] md:h-[800px] md:top-[-400px] opacity-40 cursor-pointer -z-10 mix-blend-screen transition-opacity duration-1000 animate-in fade-in" 
