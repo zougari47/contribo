@@ -8,8 +8,8 @@ const PullRequestIcon: React.FC<React.SVGProps<SVGSVGElement>> = props => {
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       {...props}
     >
       <circle cx="18" cy="18" r="3"></circle>

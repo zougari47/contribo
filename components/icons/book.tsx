@@ -8,8 +8,8 @@ const BookIcon: React.FC<React.SVGProps<SVGSVGElement>> = props => {
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       {...props}
     >
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>

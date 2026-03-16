@@ -8,8 +8,8 @@ const CalendarIcon: React.FC<React.SVGProps<SVGSVGElement>> = props => {
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       {...props}
     >
       <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
