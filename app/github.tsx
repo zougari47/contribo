@@ -1,167 +1,123 @@
-interface Repository {
+export interface Repository {
   nameWithOwner: string
   url: string
   stargazerCount: number
 }
 
-export interface PullRequest {
+export interface Contribution {
+  type: 'PR' | 'ISSUE'
   createdAt: string
   title: string
   url: string
   repository: Repository
 }
 
-interface Issue {
-  issue: {
-    title: string
-    url: string
-    createdAt: string
-    repository: Repository
-  }
-}
-
-interface ContributionsCollection {
-  pullRequestContributions: {
-    nodes: {
-      pullRequest: PullRequest
-    }[]
-    pageInfo: {
-      hasNextPage: boolean
-      endCursor: string | null
-    }
-  }
-  issueContributions: {
-    nodes: Issue[]
-  }
-  repositoriesContributedTo: {
-    nodes: Repository[]
-  }
-}
-
-interface GraphQLResponse {
-  data: {
-    user: {
-      contributionsCollection: ContributionsCollection
-    }
-  }
-  errors?: { message: string }[]
+export interface PageInfo {
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+  startCursor: string | null
+  endCursor: string | null
 }
 
 export const getLatestContributions = async ({
   username,
   includeUserRepos = false,
   type = 'both', // 'prs' | 'issues' | 'both'
+  cursor,
+  direction = 'after', // 'after' | 'before'
 }: {
   username: string
   includeUserRepos?: boolean
   type?: string
-}) => {
-  let totalContributions: (PullRequest | Issue['issue'])[] = []
-  let hasNextPage = true
-  let cursor: string | null = null
+  cursor?: string
+  direction?: 'after' | 'before'
+}): Promise<{ contributions: Contribution[]; pageInfo: PageInfo }> => {
+  // Construct search query
+  let queryString = `author:${username} is:public sort:created-desc`
 
-  const fetchContributions = async (
-    cursor: string | null,
-    username: string
-  ) => {
-    // Only difference from previous query is adding issueContributions
-    const query = `
-      query ($cursor: String, $username: String!) {
-        user(login: $username) {
-          contributionsCollection {
-            pullRequestContributions(first: 100, after: $cursor) {
-              nodes {
-                pullRequest {
-                  title
-                  url
-                  createdAt
-                  repository {
-                    nameWithOwner
-                    url
-                    stargazerCount
-                  }
-                }
-              }
-              pageInfo {
-                hasNextPage
-                endCursor
-              }
+  if (!includeUserRepos) {
+    queryString += ` -user:${username}`
+  }
+
+  if (type === 'prs') {
+    queryString += ` is:pr`
+  } else if (type === 'issues') {
+    queryString += ` is:issue`
+  }
+
+  const paginationArgs = direction === 'before' 
+    ? `last: 12, before: $cursor` 
+    : `first: 12, after: $cursor`
+
+  const query = `
+    query ($queryString: String!, $cursor: String) {
+      search(query: $queryString, type: ISSUE, ${paginationArgs}) {
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+        nodes {
+          ... on PullRequest {
+            __typename
+            title
+            url
+            createdAt
+            repository {
+              nameWithOwner
+              url
+              stargazerCount
             }
-            issueContributions(first: 100, after: $cursor) {
-              nodes {
-                issue {
-                  title
-                  url
-                  createdAt
-                  repository {
-                    nameWithOwner
-                    url
-                    stargazerCount
-                  }
-                }
-              }
+          }
+          ... on Issue {
+            __typename
+            title
+            url
+            createdAt
+            repository {
+              nameWithOwner
+              url
+              stargazerCount
             }
           }
         }
       }
-    `
-
-    const response = await fetch('https://api.github.com/graphql', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.GITHUB_API_KEY}`,
-      },
-      body: JSON.stringify({ query, variables: { cursor, username } }),
-    })
-
-    const json = await response.json()
-
-    if (json.errors) {
-      if (json.errors[0]?.type === 'NOT_FOUND') {
-        throw new Error('NO_USER')
-      }
-      throw new Error(json.errors[0]?.message || 'Unknown error')
     }
+  `
 
-    const prNode = json.data.user.contributionsCollection.pullRequestContributions
-    const issueNode = json.data.user.contributionsCollection.issueContributions
+  const response = await fetch('https://api.github.com/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.GITHUB_API_KEY}`,
+    },
+    body: JSON.stringify({ query, variables: { cursor, queryString } }),
+    // disable Next.js aggressive cache if we want fresh results on pagination
+    next: { revalidate: 60 } 
+  })
 
-    let combined: any[] = []
+  const json = await response.json()
 
-    if (type === 'both' || type === 'prs') {
-      const prs = prNode.nodes.filter(Boolean).map((n: any) => n.pullRequest)
-      combined = [...combined, ...prs]
-    }
-    
-    if (type === 'both' || type === 'issues') {
-      const issues = issueNode.nodes.filter(Boolean).map((n: any) => n.issue)
-      combined = [...combined, ...issues]
-    }
-
-    // Filter out user's own repositories if includeUserRepos is false
-    if (!includeUserRepos) {
-      combined = combined.filter((c: any) => !c.url.includes(`github.com/${username}`))
-    }
-
-    totalContributions = [...totalContributions, ...combined]
-
-    // We only paginate based on PRs for simplicity, as it usually scales fine for recent scope
-    return {
-      hasNextPage: prNode.pageInfo.hasNextPage,
-      endCursor: prNode.pageInfo.endCursor,
-    }
+  if (json.errors) {
+    throw new Error(json.errors[0]?.message || 'Unknown error')
   }
 
-  // Keep fetching until no more pages or we have 5 valid contributions or more
-  while (hasNextPage && totalContributions.length < 5) {
-    const pageInfo = await fetchContributions(cursor, username)
-    hasNextPage = pageInfo.hasNextPage
-    cursor = pageInfo.endCursor
+  const searchData = json.data?.search
+  if (!searchData) {
+    return { contributions: [], pageInfo: { hasNextPage: false, hasPreviousPage: false, startCursor: null, endCursor: null } }
   }
 
-  // Sort by created descending
-  totalContributions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  const contributions: Contribution[] = searchData.nodes.map((node: any) => ({
+    type: node.__typename === 'PullRequest' ? 'PR' : 'ISSUE',
+    title: node.title,
+    url: node.url,
+    createdAt: node.createdAt,
+    repository: node.repository,
+  }))
 
-  return totalContributions.slice(0, 15) // Return up to 15
+  return {
+    contributions,
+    pageInfo: searchData.pageInfo
+  }
 }

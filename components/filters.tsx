@@ -15,7 +15,7 @@ export default function Filters({ disabled }: { disabled?: boolean }) {
 
   // Read the current applied values from URL
   const appliedIncludeRepos = searchParams.get('includeUserRepos') === 'true'
-  const appliedType = searchParams.get('type') || 'both'
+  const appliedType = searchParams.get('type') || 'prs'
 
   // Local state for pending (uncommitted) filter values
   const [pendingIncludeRepos, setPendingIncludeRepos] = useState(appliedIncludeRepos)
@@ -30,11 +30,16 @@ export default function Filters({ disabled }: { disabled?: boolean }) {
       params.delete('includeUserRepos')
     }
 
-    if (pendingType && pendingType !== 'both') {
+    if (pendingType && pendingType !== 'prs') {
       params.set('type', pendingType)
     } else {
       params.delete('type')
     }
+
+    // Reset pagination when filters change
+    params.delete('cursor')
+    params.delete('direction')
+    params.delete('page')
 
     router.replace(`${pathname}?${params.toString()}`)
   }

@@ -42,7 +42,22 @@ export default async function UserPage({
   const typeStr = Array.isArray(resolvedSearchParams.type) 
     ? resolvedSearchParams.type[0] 
     : resolvedSearchParams.type
-  const type = typeStr || 'both'
+  const type = typeStr || 'prs'
+
+  const cursorStr = Array.isArray(resolvedSearchParams.cursor)
+    ? resolvedSearchParams.cursor[0]
+    : resolvedSearchParams.cursor
+  const cursor = cursorStr || undefined
+
+  const directionStr = Array.isArray(resolvedSearchParams.direction)
+    ? resolvedSearchParams.direction[0]
+    : resolvedSearchParams.direction
+  const direction = (directionStr === 'before' ? 'before' : 'after') as 'after' | 'before'
+
+  const pageStr = Array.isArray(resolvedSearchParams.page)
+    ? resolvedSearchParams.page[0]
+    : resolvedSearchParams.page
+  const page = Math.max(1, parseInt(pageStr || '1', 10) || 1)
 
   return (
     <div className="min-h-screen flex flex-col items-center pt-12 pb-24 px-4 bg-background">
@@ -64,6 +79,9 @@ export default async function UserPage({
           username={username} 
           includeUserRepos={includeUserRepos} 
           type={type}
+          cursor={cursor}
+          direction={direction}
+          page={page}
         />
       </div>
     </div>
