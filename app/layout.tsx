@@ -47,6 +47,8 @@ export const metadata: Metadata = {
   },
 }
 
+import GithubLink from "@/components/github-link"
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -58,6 +60,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         {children}
+        <GithubLink />
         <footer className="mt-auto py-8 text-center text-sm text-muted-foreground border-t border-border/50">
           <p>
             Built by{" "}
