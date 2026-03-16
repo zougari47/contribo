@@ -2,6 +2,30 @@ import Contributions from '@/app/contributions'
 import Filters from '@/components/filters'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ username: string }>
+}): Promise<Metadata> {
+  const { username } = await params
+  
+  return {
+    title: `${username}'s Contributions`,
+    description: `Explore the open source contributions, pull requests, and issues made by ${username} on GitHub.`,
+    openGraph: {
+      title: `${username}'s Open Source Contributions | Contribo`,
+      description: `Explore the open source contributions, pull requests, and issues made by ${username} on GitHub.`,
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${username}'s Open Source Contributions | Contribo`,
+      description: `Explore the open source contributions by ${username} on GitHub.`,
+    },
+  }
+}
 
 export default async function UserPage({
   params,
