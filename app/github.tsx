@@ -100,6 +100,7 @@ export const getLatestContributions = async ({
   const json = await response.json()
 
   if (json.errors) {
+    console.error('GitHub API Error:', JSON.stringify(json.errors, null, 2))
     throw new Error(json.errors[0]?.message || 'Unknown error')
   }
 
