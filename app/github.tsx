@@ -33,7 +33,7 @@ export const getLatestContributions = async ({
   direction?: 'after' | 'before'
 }): Promise<{ contributions: Contribution[]; pageInfo: PageInfo }> => {
   // Construct search query
-  let queryString = `author:${username} is:public sort:created-desc`
+  let queryString = `author:${username} sort:created-desc`
 
   if (!includeUserRepos) {
     queryString += ` -user:${username}`
@@ -98,6 +98,12 @@ export const getLatestContributions = async ({
   })
 
   const json = await response.json()
+
+  if (!response.ok || json.message) {
+    const errorMsg = json.message || response.statusText || 'Unknown error'
+    console.error(`GitHub API HTTP Error (${response.status}):`, errorMsg)
+    throw new Error(`GitHub API Error: ${errorMsg}`)
+  }
 
   if (json.errors) {
     console.error('GitHub API Error:', JSON.stringify(json.errors, null, 2))
