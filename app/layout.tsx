@@ -59,7 +59,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        {children}
+        <main>
+          {children}
+        </main>
         <GithubLink />
         <footer className="mt-auto py-8 text-center text-sm text-muted-foreground border-t border-border/50">
           <p>
